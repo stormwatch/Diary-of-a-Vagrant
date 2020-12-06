@@ -1,0 +1,8 @@
+# -*- mode: gitignore; -*-
+*~
+\#*\#
+/auto/
+auto-save-list
+.dnf-cache/
+.vagrant/
+*.log

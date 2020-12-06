@@ -1,0 +1,236 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:nil e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+title: Diary of a Vagrant
+#+subtitle: Experiments on virtualization and self-learning Vagrant & Friends.
+#+date: <2020-11-24 mar>
+#+author: Ezequiel Birman
+#+email: ebirman77@gmail.com
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
+#+creator: Emacs 27.1 (Org mode 9.4)
+
+I'll try to install Vagrant and most providers like VirtualBox, libvirt, VMware,
+etc. Then I'll download some boxes and test which ones succed or fail when
+brought up. My current computer runs Fedora 32, so many of the steps I'll detail
+won't apply to other distributions.
+
+* Hardware requirements
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 09:25]
+:END:
+** DONE Enable virtualization features in the BIOS setup
+** DONE Check if your system supports virtualization
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 10:02]
+:END:
+If you have =libvirt-client= or =lscpu= already installed, you can run
+~virt-host-validate~ or ~LANG= lscpu | grep Virtualization~ respectively. Otherwise run
+#+begin_src
+egrep "svm|vmx" /proc/cpuinfo
+#+end_src
+
+* DONE Install VirtualBox
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 10:20]
+:END:
+I enabled RPM Fusion and followed the instructions in RPM Fusion's [[https://rpmfusion.org/Howto/VirtualBox][VirtualBox
+Howto]]. =vboxdrv= might fail to load because the module isn't signed. I can
+either disable the secure boot option in the BIOS or [[https://rpmfusion.org/Howto/VirtualBox#Sign_kernel_modules_to_work_with_secure_boot][sign the kernel modules]].
+See also this [[https://bugzilla.redhat.com/show_bug.cgi?id=1454824][bug report]].
+
+According to [[https://www.vagrantup.com/docs/installation][Vagrant's Installation instructions]] VirtualBox might also fail if
+it is run alongside =kvm=. They suggest blackisting the offending module.
+
+** DONE Install the guest additions
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 05:00]
+:END:
+This package contains the VirtualBox Guest Additions which support better
+integration of VirtualBox guests with the Host, including file sharing,
+clipboard sharing and Seamless mode
+
+* DONE Install qemu-kvm & utilities
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 09:59]
+:END:
+#+begin_src shell
+  dnf group install --with-optional virtualization
+#+end_src
+
+** TODO Fix =libvirtd.socket=
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 09:20]
+:END:
+I wasn't able to configure =libvirtd.socket= yet. It won't start the libvirt
+service when needed. I have to start or enable =libvirtd.service= explicitly
+instead:
+#+begin_src shell
+  sudo systemctl enable --now libvirtd.service
+#+end_src
+
+* DONE Install Vagrant and its libvirt plugin
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 19:19]
+:END:
+I have four main choices. The problem is I still cannot figure out which is one
+is better for my use case.
+- Fedora's package :: Easiest installation. Lagging behind the upstream version.
+  Won't work with [[https://app.vagrantup.com/peru/boxes/windows-server-2019-standard-x64-eval][Windows guests]].
+- [[https://github.com/Banno/asdf-hashicorp][asdf-hashicorp]] :: easy installation. just ~asdf plugin add vagrant; then asdf
+  install vagrant latest; then asdf global vagrant 2.2.14~. Unfortunately —as of
+  [2020-12-04 vie]— ~vagrant plugin install vagrant-libvirt~ fails to complete
+  but if I'll only stick to VirtualBox it might be an option worth considering.
+- Download the [[https://www.vagrantup.com/downloads][official Vagrant package]] :: A pain to get it right. [[https://bugzilla.redhat.com/show_bug.cgi?id=1833024][Upstream
+  isn't compatible with the Fedora version of OpenSSL]]. Ruby in Vagrant is built
+  against a bundled version of OpenSSL while during vagrant-libvirt
+  installation, the system version of OpenSSL is used and later they clash. The
+  workaround is to download OpenSSL and Kerberos 5 source RPM libs, rebuild them
+  and manually copying the shared libraries to =/opt/vagrant/embedded/lib64=.
+  Then I can run ~vagrant plugin install vagrant-libvirt~ but make sure to
+  remove =~/.vagrant.d= remnant from previous attempts beforehand. I found the
+  workarounds and relevant information for Fedora, RHEL 8, and CentOS 8 in
+  [[https://github.com/vagrant-libvirt/vagrant-libvirt#installation][vagrant-libvirt installation instructions]] and this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. This problem
+  also affects other software like Matlab and Scilab. I quote the following
+  comment from [[https://bugzilla.redhat.com/show_bug.cgi?id=1829790#c10][another bug report]]:
+  #+begin_quote
+  …this means those products are using most probably outdated libraries w/o
+  getting CVE bugfixes when the system gets them. I would open a bug report
+  upstream to stop doing this stupid library interposing on all systems and do
+  it only where the proper library version is missing (arguably they do this to
+  handle RHEL/CentOS 6 which are stuck on openssl 1.0.2). That said at least
+  Matlab is a proprietary product so… good luck, any number of things can break
+  when they play fast and loose with critical libararies like openssl.
+  #+end_quote
+  - Use Windows :: I followed [[https://www.vagrantup.com/docs/other/wsl.html][Vagrant and Windows Subsystem for Linux]]. Looks
+    promising but I remember having issues with WSL 2. The tests I made with the
+    native version and VirtualBox run fine.
+
+* TODO Install VMware
+:PROPERTIES:
+:CREATED:  [2020-12-04 vie 19:42]
+:END:
+
+* Interesting Vagrant boxes
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 04:00]
+:END:
+
+** [[https://app.vagrantup.com/ailispaw/boxes/barge][Ailispaw's Barge]]                                      :VirtualBox:veertu:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 13:37]
+:User: [[https://app.vagrantup.com/ailispaw/][ailispaw]]
+:Homepage: https://github.com/bargees/barge-os
+:END:
+a lightweight Linux distribution built with [[http://buildroot.uclibc.org/][Buildroot]] specifically to run Docker
+containers.
+
+*** Features
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 14:19]
+:END:
+- Built with Buildroot 2019.05 with Linux kernel v4.14.125 and glibc.
+- Docker v1.10.3 (~ latest version)
+- Support NFS synced folder
+- Support VirtualBox Shared Folder (VirtualBox only) with VirtualBox Guest Addition v6.0.4
+- Support Docker provisioner
+- Disable TLS of Docker for simplicity
+- Expose and forward the official IANA registered Docker port 2375
+- [[https://github.com/Yelp/dumb-init][dumb-init]] binary is built-in /usr/bin
+- [[https://github.com/bargees/barge-pkg][pkg]] command is built-in. You can install individual packages from Buildroot.
+- Enable to switch between Docker versions
+- 40 GB persistent disk
+- 13.8 MB
+
+** [[https://app.vagrantup.com/bento/][Bento]]                                         :VirtualBox:VMware_desktop:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 04:16]
+:END:
+Boxes built using templates from the Chef's [[http://chef.github.io/bento/][Bento]] project.
+Currently they list:
+- FreeBSD
+- Debian
+- Oracle
+- Scientific
+- openSUSE
+- CentOS
+- Fedora
+- Ubuntu
+- Amazon Linux
+** [[https://app.vagrantup.com/fedora/][Fedora]]                                               :VirtualBox:libvirt:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 04:01]
+:END:
+Official images mirrored in [[https://alt.fedoraproject.org/cloud/][Fedora cloud base images for Vagrant]]
+** [[https://app.vagrantup.com/centos][CentOS]]                                               :VirtualBox:libvirt:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 04:02]
+:END:
+Official images for [[https://www.centos.org/][CentOS]].Besides the main images, they offer a proof of
+concept [[https://app.vagrantup.com/centos/boxes/atomic-host-aws][atomic host box]] that uses AWS backend.
+** [[https://app.vagrantup.com/freebsd/][FreeBSD]]                                       :VirtualBox:VMware_desktop:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 04:03]
+:END:
+** [[https://www.alpinelinux.org/][alpine linux]]                                         :VirtualBox:libvirt:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 14:37]
+:END:
+Alpine Linux is a security-oriented, lightweight Linux distribution based on musl libc and busybox.
+** [[https://app.vagrantup.com/roboxes/][roboxes]]       :VirtualBox:libvirt:VMware_desktop:docker:hyperv:parallels:
+:PROPERTIES:
+:CREATED:  [2020-12-06 dom 14:45]
+:END:
+Base Boxes Built by Benevolent Robotic Dogs. https://roboxes.org/
+
+Mirrored by [[https://app.vagrantup.com/generic/][generic]]. Provides:
+- Oracle
+- Fedora
+- Ubuntu
+- Devuan
+- Alpine
+- netBSD
+- openSUSE
+- Gentoo
+- HardenedBSD
+- RHEL
+- DragonFlyBSD
+  
+* TODO Testing Vagrant providers and boxes
+:PROPERTIES:
+:CREATED:  [2020-12-02 mié 18:56]
+:END:
+Current status after running ~vagrant up~
+|                             | VirtualBox | Docker | libvirt (qemu-kvm) | VMware |
+|-----------------------------+------------+--------+--------------------+--------|
+| [[https://app.vagrantup.com/ailispaw/boxes/barge][ailispaw/barge]]              | success    | N/A    | N/A                | N/A    |
+| [[https://app.vagrantup.com/centos/boxes/8][centos/8]]                    | TODO       | N/A    | success            | N/A    |
+| [[https://app.vagrantup.com/freebsd/boxes/FreeBSD-12.2-STABLE][freebsd/FreeBSD-12.2-STABLE]] | TODO       | N/A    | N/A                | TODO   |
+| [[https://app.vagrantup.com/bento/boxes/freebsd-12.2][bento/freebsd-12.2]]          | TODO       | N/A    | N/A                | TODO   |
+| [[https://app.vagrantup.com/alpine-linux/boxes/alpine-x86_64][alpine-linux/alpine-x86_64]]  | TODO       | N/A    | TODO               | N/A    |
+| [[https://app.vagrantup.com/fedora/boxes/33-cloud-base][fedora/33-cloud-base]]        | TODO       | N/A    | sucess             | N/A    |
+
+** DONE Fedora
+For qemu-kvm, I based my Vagrantfile on the [[https://fedoraproject.org/wiki/Vagrant][example]] in the Fedora Wiki.
+
+* Further reading
+:PROPERTIES:
+:CREATED:  [2020-12-05 sáb 22:17]
+:END:
+- [[https://docs.fedoraproject.org/en-US/quick-docs/getting-started-with-virtualization/index.html][Getting started with virtualization]] :: is an excellent overview to using the
+  virtualization capabilities in Fedora.
+- The [[https://fedoraproject.org/wiki/Vagrant][Vagrant page]] :: in the Fedora Wiki provides a useful Vagrantfile example
+  to use the official [[https://alt.fedoraproject.org/cloud/][Fedora cloud base images for Vagrant]].
+- [[https://fedoraproject.org/wiki/How_to_debug_Virtualization_problems][How to debug Virtualization problems]] :: in the Fedora Wiki.
+- [[https://fedoramagazine.org/vagrant-qemukvm-fedora-devops-sysadmin/][Installing and running Vagrant using qemu-kvm]] :: Fedora Magazine, [2020-09-21].
+- [[https://fedoramagazine.org/vagrant-beyond-basics/][Vagrant beyond the basics]] :: Fedora Magazine, [2020-12-02].
+- [[https://fedoramagazine.org/full-virtualization-system-on-fedora-workstation-30/][How to run virtual machines with virt-manager]] :: Fedora Magazine,  [2019-07-22] .
+- [[https://fedoramagazine.org/using-ansible-provision-vagrant-boxes/][Using Ansible to Provision Vagrant Boxes]] :: Fedora Magazine, [2016-09-14].
+- [[https://fedoramagazine.org/install-fedora-virtualbox-guest/][How to Install Fedora as a VirtualBox guest]] :: Fedora Magazine, [2017-03-20].
+- [[https://fedoramagazine.org/getting-started-with-fedora-coreos/][Getting started with Fedora CoreOS]] :: Fedora Magazine, [2020-11-27].
+- [[https://www.ovirt.org/][oVirt]] :: is an open-source distributed virtualization solution, designed to
+  manage your entire enterprise infrastructure. oVirt uses the trusted KVM
+  hypervisor and is built upon several other community projects, including
+  libvirt, Gluster, PatternFly, and Ansible.
