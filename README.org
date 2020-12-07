@@ -42,7 +42,7 @@ either disable the secure boot option in the BIOS or [[https://rpmfusion.org/How
 See also this [[https://bugzilla.redhat.com/show_bug.cgi?id=1454824][bug report]].
 
 According to [[https://www.vagrantup.com/docs/installation][Vagrant's Installation instructions]] VirtualBox might also fail if
-it is run alongside =kvm=. They suggest blackisting the offending module.
+it is run alongside =kvm=. They suggest blacklisting the offending module.
 
 ** DONE Install the guest additions
 :PROPERTIES:
@@ -87,14 +87,14 @@ is better for my use case.
   isn't compatible with the Fedora version of OpenSSL]]. Ruby in Vagrant is built
   against a bundled version of OpenSSL while during vagrant-libvirt
   installation, the system version of OpenSSL is used and later they clash. The
-  workaround is to download OpenSSL and Kerberos 5 source RPM libs, rebuild them
-  and manually copying the shared libraries to =/opt/vagrant/embedded/lib64=.
-  Then I can run ~vagrant plugin install vagrant-libvirt~ but make sure to
-  remove =~/.vagrant.d= remnant from previous attempts beforehand. I found the
-  workarounds and relevant information for Fedora, RHEL 8, and CentOS 8 in
-  [[https://github.com/vagrant-libvirt/vagrant-libvirt#installation][vagrant-libvirt installation instructions]] and this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. This problem
-  also affects other software like Matlab and Scilab. I quote the following
-  comment from [[https://bugzilla.redhat.com/show_bug.cgi?id=1829790#c10][another bug report]]:
+  workaround is to download OpenSSL and Kerberos 5 source RPM libraries, rebuild
+  them and manually copying the shared libraries to
+  =/opt/vagrant/embedded/lib64=. Then I can run ~vagrant plugin install
+  vagrant-libvirt~ but make sure to remove =~/.vagrant.d= remnant from previous
+  attempts beforehand. I found the workarounds and relevant information for
+  Fedora, RHEL 8, and CentOS 8 in [[https://github.com/vagrant-libvirt/vagrant-libvirt#installation][vagrant-libvirt installation instructions]] and
+  this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. This problem also affects other software like Matlab and
+  Scilab. I quote the following comment from [[https://bugzilla.redhat.com/show_bug.cgi?id=1829790#c10][another bug report]]:
   #+begin_quote
   …this means those products are using most probably outdated libraries w/o
   getting CVE bugfixes when the system gets them. I would open a bug report
@@ -102,7 +102,7 @@ is better for my use case.
   it only where the proper library version is missing (arguably they do this to
   handle RHEL/CentOS 6 which are stuck on openssl 1.0.2). That said at least
   Matlab is a proprietary product so… good luck, any number of things can break
-  when they play fast and loose with critical libararies like openssl.
+  when they play fast and loose with critical libraries like openssl.
   #+end_quote
   - Use Windows :: I followed [[https://www.vagrantup.com/docs/other/wsl.html][Vagrant and Windows Subsystem for Linux]]. Looks
     promising but I remember having issues with WSL 2. The tests I made with the
@@ -174,12 +174,12 @@ concept [[https://app.vagrantup.com/centos/boxes/atomic-host-aws][atomic host bo
 :PROPERTIES:
 :CREATED:  [2020-12-06 dom 04:03]
 :END:
-** [[https://www.alpinelinux.org/][alpine linux]]                                         :VirtualBox:libvirt:
+** [[https://www.alpinelinux.org/][alpine Linux]]                                         :VirtualBox:libvirt:
 :PROPERTIES:
 :CREATED:  [2020-12-06 dom 14:37]
 :END:
 Alpine Linux is a security-oriented, lightweight Linux distribution based on musl libc and busybox.
-** [[https://app.vagrantup.com/roboxes/][roboxes]]       :VirtualBox:libvirt:VMware_desktop:docker:hyperv:parallels:
+** [[https://app.vagrantup.com/roboxes/][Roboxes]]      :VirtualBox:libvirt:VMware_desktop:docker:hyperv:parallels:
 :PROPERTIES:
 :CREATED:  [2020-12-06 dom 14:45]
 :END:
@@ -203,17 +203,14 @@ Mirrored by [[https://app.vagrantup.com/generic/][generic]]. Provides:
 :CREATED:  [2020-12-02 mié 18:56]
 :END:
 Current status after running ~vagrant up~
-|                             | VirtualBox | Docker | libvirt (qemu-kvm) | VMware |
-|-----------------------------+------------+--------+--------------------+--------|
-| [[https://app.vagrantup.com/ailispaw/boxes/barge][ailispaw/barge]]              | success    | N/A    | N/A                | N/A    |
-| [[https://app.vagrantup.com/centos/boxes/8][centos/8]]                    | TODO       | N/A    | success            | N/A    |
-| [[https://app.vagrantup.com/freebsd/boxes/FreeBSD-12.2-STABLE][freebsd/FreeBSD-12.2-STABLE]] | TODO       | N/A    | N/A                | TODO   |
-| [[https://app.vagrantup.com/bento/boxes/freebsd-12.2][bento/freebsd-12.2]]          | TODO       | N/A    | N/A                | TODO   |
-| [[https://app.vagrantup.com/alpine-linux/boxes/alpine-x86_64][alpine-linux/alpine-x86_64]]  | TODO       | N/A    | TODO               | N/A    |
-| [[https://app.vagrantup.com/fedora/boxes/33-cloud-base][fedora/33-cloud-base]]        | TODO       | N/A    | sucess             | N/A    |
-
-** DONE Fedora
-For qemu-kvm, I based my Vagrantfile on the [[https://fedoraproject.org/wiki/Vagrant][example]] in the Fedora Wiki.
+|                             | VirtualBox | Docker | libvirt (qemu-kvm) | VMware  |
+|-----------------------------+------------+--------+--------------------+---------|
+| [[https://app.vagrantup.com/ailispaw/boxes/barge][ailispaw/barge]]              | success    | N/A    | N/A                | N/A     |
+| [[https://app.vagrantup.com/centos/boxes/8][centos/8]]                    | pending    | N/A    | success            | N/A     |
+| [[https://app.vagrantup.com/freebsd/boxes/FreeBSD-12.2-STABLE][freebsd/FreeBSD-12.2-STABLE]] | pending    | N/A    | N/A                | pending |
+| [[https://app.vagrantup.com/bento/boxes/freebsd-12.2][bento/freebsd-12.2]]          | pending    | N/A    | N/A                | pending |
+| [[https://app.vagrantup.com/alpine-linux/boxes/alpine-x86_64][alpine-linux/alpine-x86_64]]  | pending    | N/A    | pending            | N/A     |
+| [[https://app.vagrantup.com/fedora/boxes/33-cloud-base][fedora/33-cloud-base]]        | pending    | N/A    | success            | N/A     |
 
 * Further reading
 :PROPERTIES:
