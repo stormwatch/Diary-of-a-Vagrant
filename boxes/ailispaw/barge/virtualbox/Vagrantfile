@@ -29,13 +29,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder '.', '/vagrant'
 
   # for NFS synced folder
-  # config.vm.network :private_network, ip: "192.168.33.10"
+  # config.vm.network :private_network, ip: '192.168.33.10'
   # config.vm.synced_folder '.', '/vagrant', type: 'nfs', mount_options:
   # ['nolock', 'vers=3', 'udp', 'noatime', 'actimeo=1']
 
   # for RSync synced folder
-  # config.vm.synced_folder ".", "/vagrant", type: "rsync",
-  #   rsync__args: ["--verbose", "--archive", "--delete", "--copy-links"]
+  # config.vm.synced_folder '.', '/vagrant', type: 'rsync',
+  #   rsync__args: ['--verbose', '--archive', '--delete', '--copy-links']
 
   config.vm.define VM_NAME do |machine|
     machine.vm.host_name = VM_NAME
@@ -47,7 +47,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provision :docker do |d|
-    d.run 'nginx:mainline-alpine', args: '-p 80:80'
+    d.pull_images 'busybox'
+    d.run 'simple-echo',
+          image: 'busybox',
+          args: '-p 8080:8080 -v /usr/bin/dumb-init:/dumb-init:ro --entrypoint=/dumb-init',
+          cmd: 'nc -p 8080 -l -l -e echo hello world!'
   end
+
   config.vm.network :forwarded_port, guest: 80, host: 8080
 end
