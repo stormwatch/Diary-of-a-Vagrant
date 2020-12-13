@@ -52,12 +52,12 @@ This package contains the VirtualBox Guest Additions which support better
 integration of VirtualBox guests with the Host, including file sharing,
 clipboard sharing and Seamless mode
 
-* DONE Install qemu-kvm & utilities
+* DONE Install libvirt, qemu-kvm & utilities
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 09:59]
 :END:
-#+begin_src shell
-  dnf group install --with-optional virtualization
+#+begin_src shell :async :results none
+  sudo dnf -yq group install --with-optional virtualization
 #+end_src
 
 ** TODO Fix =libvirtd.socket=
@@ -71,14 +71,93 @@ instead:
   sudo systemctl enable --now libvirtd.service
 #+end_src
 
+** DONE Switch to [[https://libvirt.org/daemons.html#switching-to-modular-daemons][modular dæmons]]
+CLOSED: [2020-12-13 dom 04:01]
+:PROPERTIES:
+:CREATED:  [2020-12-12 sáb 22:09]
+:END:
+
+libvirtd is migrating from  [[https://libvirt.org/daemons.html#monolithic-vs-modular-daemons][a monolithic to a modular dæmon architecture]]
+#+begin_quote
+The libvirt daemons, whether monolithic or modular, can often operate in two
+modes
+
+- System mode :: the daemon is running as the root user account, enabling access
+  to its full range of functionality. A read-write connection to daemons in
+  system mode typically implies privileges equivalent to having a root shell.
+  Suitable authentication mechanisms must be enabled to secure it against
+  untrustworthy clients/users.
+- Session mode :: the daemon is running as any non-root user account, providing
+  access to a more restricted range of functionality. Only client apps/users
+  running under the same UID are permitted to connect, thus a connection does
+  not imply any elevation of privileges.
+#+end_quote
+
+*** DONE Stop the current monolithic daemon and its socket units
+CLOSED: [2020-12-12 sáb 23:22]
+:PROPERTIES:
+:CREATED:  [2020-12-12 sáb 23:17]
+:END:
+#+begin_src sh :async
+  systemctl disable --now libvirtd.service
+  systemctl disable --now libvirtd{,-ro,-admin,-tcp,-tls}.socket
+#+end_src
+
+For stronger protection it is valid to use =mask= instead of =disable= too.
+
+*** TODO Enable the new daemons for the particular virtualizationd driver desired, and any of the secondary drivers to accompany it.
+:PROPERTIES:
+:CREATED:  [2020-12-12 sáb 23:29]
+:END:
+The following example enables the =qemu= and =virtbvox= drivers and all the secondary drivers:
+#+begin_src sh :async :results none
+  for drv in qemu virtvbox interface network nodedev nwfilter secret storage
+  do
+      systemctl unmask virt${drv}d.service
+      systemctl unmask virt${drv}d{,-ro,-admin}.socket
+      systemctl enable virt${drv}d.service
+      systemctl enable virt${drv}d{,-ro,-admin}.socket
+  done
+#+end_src
+
+Start the sockets for the same set of daemons. There is no need to start the
+services as they will get started when the first socket connection is
+established.
+# why does the document ommit =virtinterface.socket=?
+#+begin_src sh :async :results none
+  for drv in qemu virtbvox network nodedev nwfilter secret storage
+  do
+      systemctl start virt${drv}d{,-ro,-admin}.socket
+  done
+#+end_src
+
+If connections from remote hosts need to be supported the proxy daemon must be
+enabled and started
+#+begin_src sh :async :results none
+  systemctl unmask virtproxyd.service
+  systemctl unmask virtproxyd{,-ro,-admin}.socket
+  systemctl enable virtproxyd.service
+  systemctl enable virtproxyd{,-ro,-admin}.socket
+  systemctl start virtproxyd{,-ro,-admin}.socket
+#+end_src
+
+The UNIX sockets allow for remote access using SSH tunneling. If libvirtd had
+TCP or TLS sockets configured, those should be started too
+#+begin_src sh :async :results none
+  systemctl unmask virtproxyd-tls.socket
+  systemctl enable virtproxyd-tls.socket
+  systemctl start virtproxyd-tls.socket
+#+end_src
+
 * DONE Install Vagrant and its libvirt plugin
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 19:19]
 :END:
-I have four main choices. The problem is I still cannot figure out which is one
-is better for my use case.
+I have four main choices. The problem is I still cannot figure out which one is
+better for my use case.
 - Fedora's package :: Easiest installation. Lagging behind the upstream version.
-  Won't work with [[https://app.vagrantup.com/peru/boxes/windows-server-2019-standard-x64-eval][Windows guests]].
+  Won't work with [[https://app.vagrantup.com/peru/boxes/windows-server-2019-standard-x64-eval][Windows guests]]. Since I also use asdf-ruby
+  
 - [[https://github.com/Banno/asdf-hashicorp][asdf-hashicorp]] :: easy installation. just ~asdf plugin add vagrant; then asdf
   install vagrant latest; then asdf global vagrant 2.2.14~. Unfortunately —as of
   [2020-12-04 vie]— ~vagrant plugin install vagrant-libvirt~ fails to complete
