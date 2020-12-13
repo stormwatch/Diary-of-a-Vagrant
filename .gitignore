@@ -4,6 +4,6 @@
 /auto/
 auto-save-list
 .dnf-cache/
-.tool-versions/
+.tool-versions
 .vagrant/
 *.log
