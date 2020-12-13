@@ -282,14 +282,14 @@ Mirrored by [[https://app.vagrantup.com/generic/][generic]]. Provides:
 :CREATED:  [2020-12-02 mié 18:56]
 :END:
 Current status after running ~vagrant up~
-|                             | VirtualBox | Docker | libvirt (qemu-kvm) | VMware  |
-|-----------------------------+------------+--------+--------------------+---------|
-| [[https://app.vagrantup.com/ailispaw/boxes/barge][ailispaw/barge]]              | success    | N/A    | N/A                | N/A     |
-| [[https://app.vagrantup.com/centos/boxes/8][centos/8]]                    | pending    | N/A    | success            | N/A     |
-| [[https://app.vagrantup.com/freebsd/boxes/FreeBSD-12.2-STABLE][freebsd/FreeBSD-12.2-STABLE]] | pending    | N/A    | N/A                | pending |
-| [[https://app.vagrantup.com/bento/boxes/freebsd-12.2][bento/freebsd-12.2]]          | pending    | N/A    | N/A                | pending |
-| [[https://app.vagrantup.com/alpine-linux/boxes/alpine-x86_64][alpine-linux/alpine-x86_64]]  | pending    | N/A    | pending            | N/A     |
-| [[https://app.vagrantup.com/fedora/boxes/33-cloud-base][fedora/33-cloud-base]]        | pending    | N/A    | success            | N/A     |
+|                             | VirtualBox | libvirt (qemu-kvm) | VMware  |
+|-----------------------------+------------+--------------------+---------|
+| [[https://app.vagrantup.com/ailispaw/boxes/barge][ailispaw/barge]]              | success    | N/A                | N/A     |
+| [[https://app.vagrantup.com/centos/boxes/8][centos/8]]                    | pending    | success            | N/A     |
+| [[https://app.vagrantup.com/freebsd/boxes/FreeBSD-12.2-STABLE][freebsd/FreeBSD-12.2-STABLE]] | pending    | N/A                | pending |
+| [[https://app.vagrantup.com/bento/boxes/freebsd-12.2][bento/freebsd-12.2]]          | pending    | N/A                | pending |
+| [[https://app.vagrantup.com/alpine-linux/boxes/alpine-x86_64][alpine-linux/alpine-x86_64]]  | pending    | pending            | N/A     |
+| [[https://app.vagrantup.com/fedora/boxes/33-cloud-base][fedora/33-cloud-base]]        | pending    | success            | N/A     |
 
 * Further reading
 :PROPERTIES:
