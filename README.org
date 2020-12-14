@@ -153,27 +153,33 @@ TCP or TLS sockets configured, those should be started too
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 19:19]
 :END:
-I have four main choices. The problem is I still cannot figure out which one is
-better for my use case.
-- Fedora's package :: Easiest installation. Lagging behind the upstream version.
-  Won't work with [[https://app.vagrantup.com/peru/boxes/windows-server-2019-standard-x64-eval][Windows guests]]. Since I also use asdf-ruby
-  
-- [[https://github.com/Banno/asdf-hashicorp][asdf-hashicorp]] :: easy installation. just ~asdf plugin add vagrant; then asdf
-  install vagrant latest; then asdf global vagrant 2.2.14~. Unfortunately —as of
-  [2020-12-04 vie]— ~vagrant plugin install vagrant-libvirt~ fails to complete
-  but if I'll only stick to VirtualBox it might be an option worth considering.
-- Download the [[https://www.vagrantup.com/downloads][official Vagrant package]] :: A pain to get it right. [[https://bugzilla.redhat.com/show_bug.cgi?id=1833024][Upstream
+Choose your poison: 
+- Fedora's package (recommended) :: Easiest installation. Lagging somewhat
+  behind the upstream version. Won't work with [[https://app.vagrantup.com/peru/boxes/windows-server-2019-standard-x64-eval][Windows guests]]. Moreover,
+  [[https://github.com/asdf-vm/asdf-ruby][asdf-ruby]] installed runtimes will conflict with the Vagrant package. The
+  solution is to type ~asdf local ruby system~ inside the directory with the
+  Vagrantfile, otherwise Vagrant will complain about not being able to find some
+  ruby gems and not being able to require =nokogiri=. It has one inconvinience
+  though: if asdf uses the system's Ruby, Emacs won't be able to find the binary
+  for rubocop (this may affect solargraph too). I thought ~asdf local ruby
+  system 2.7.2~ would solve the issuse but it didn't.[fn:1]
+- [[https://github.com/Banno/asdf-hashicorp][asdf-hashicorp]] :: Easy installation. In fish shell just ~asdf plugin add
+  vagrant; then asdf install vagrant latest; then asdf global vagrant x.y.z~ .
+  As of [2020-12-04 vie]— ~vagrant plugin install vagrant-libvirt~ will fail so
+  =vagrant-libvirt= kindly provides an alternative [[https://github.com/vagrant-libvirt/vagrant-libvirt#using-docker-based-installation][Docker based installation]].
+- Download the [[https://www.vagrantup.com/downloads][official Vagrant package]] :: Beware that the [[https://bugzilla.redhat.com/show_bug.cgi?id=1833024][Upstream Vagrant
   isn't compatible with the Fedora version of OpenSSL]]. Ruby in Vagrant is built
   against a bundled version of OpenSSL while during vagrant-libvirt
   installation, the system version of OpenSSL is used and later they clash. The
   workaround is to download OpenSSL and Kerberos 5 source RPM libraries, rebuild
   them and manually copying the shared libraries to
   =/opt/vagrant/embedded/lib64=. Then I can run ~vagrant plugin install
-  vagrant-libvirt~ but make sure to remove =~/.vagrant.d= remnant from previous
-  attempts beforehand. I found the workarounds and relevant information for
-  Fedora, RHEL 8, and CentOS 8 in [[https://github.com/vagrant-libvirt/vagrant-libvirt#installation][vagrant-libvirt installation instructions]] and
-  this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. This problem also affects other software like Matlab and
-  Scilab. I quote the following comment from [[https://bugzilla.redhat.com/show_bug.cgi?id=1829790#c10][another bug report]]:
+  vagrant-libvirt~ but make sure to remove the =~/.vagrant.d= remnant from
+  previous attempts, beforehand. I found the workarounds and relevant
+  information for Fedora, RHEL 8, and CentOS 8 in [[https://github.com/vagrant-libvirt/vagrant-libvirt#installation][vagrant-libvirt installation
+  instructions]] and in this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. Similar problems also affects other
+  software like Matlab and Scilab. I quote the following comment from [[https://bugzilla.redhat.com/show_bug.cgi?id=1829790#c10][another
+  bug report]]:
   #+begin_quote
   …this means those products are using most probably outdated libraries w/o
   getting CVE bugfixes when the system gets them. I would open a bug report
@@ -183,7 +189,8 @@ better for my use case.
   Matlab is a proprietary product so… good luck, any number of things can break
   when they play fast and loose with critical libraries like openssl.
   #+end_quote
-  - Use Windows :: I followed [[https://www.vagrantup.com/docs/other/wsl.html][Vagrant and Windows Subsystem for Linux]]. Looks
+- [[https://www.vagrantup.com/docs/installation/source][Install from source]] :: and try to use the Docker image for =vagrant-libvirt=.
+- Use Windows :: I followed [[https://www.vagrantup.com/docs/other/wsl.html][Vagrant and Windows Subsystem for Linux]]. Looks
     promising but I remember having issues with WSL 2. The tests I made with the
     native version and VirtualBox run fine.
 
@@ -310,3 +317,16 @@ Current status after running ~vagrant up~
   manage your entire enterprise infrastructure. oVirt uses the trusted KVM
   hypervisor and is built upon several other community projects, including
   libvirt, Gluster, PatternFly, and Ansible.
+
+* Footnotes
+
+[fn:1] For the time being I added the following to my init file:
+#+begin_src emacs-lisp
+   (use-package rubocop
+    :defer t
+    :custom (rubocop-check-command
+             (concat
+              (substring (shell-command-to-string "asdf which rubocop") 0 -1)
+              " --format emacs")))
+#+end_src
+
