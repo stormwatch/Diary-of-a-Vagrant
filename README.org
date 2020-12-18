@@ -15,7 +15,7 @@
 I'll try to install Vagrant and most providers like VirtualBox, libvirt, VMware,
 etc. Then I'll download some boxes and test which ones succed or fail when
 brought up. My current computer runs Fedora 32, so many of the steps I'll detail
-won't apply to other distributions.
+will apply to similar distributions without changes.
 
 * Hardware requirements
 :PROPERTIES:
@@ -32,7 +32,17 @@ If you have =libvirt-client= or =lscpu= already installed, you can run
 egrep "svm|vmx" /proc/cpuinfo
 #+end_src
 
-* DONE Install VirtualBox
+* Virtual Machines providers
+:PROPERTIES:
+:CREATED:  [2020-12-18 vie 00:05]
+:END:
+Due to time constrainsts, I won't be able to make an exhaustive test of the
+different products right away. Some of these technologies are also called
+hypervisors which is a funny word that appeared in OS research papers around the
+[[https://softwareengineering.stackexchange.com/questions/196405/how-did-the-term-hypervisor-come-into-use][sixties and seventies]] and denotes —at least in its origins— a supervisor of
+supervisors.
+
+** DONE Install VirtualBox
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 10:20]
 :END:
@@ -44,15 +54,20 @@ See also this [[https://bugzilla.redhat.com/show_bug.cgi?id=1454824][bug report]
 According to [[https://www.vagrantup.com/docs/installation][Vagrant's Installation instructions]] VirtualBox might also fail if
 it is run alongside =kvm=. They suggest blacklisting the offending module.
 
-** DONE Install the guest additions
+*** DONE Install the guest additions
 :PROPERTIES:
 :CREATED:  [2020-12-06 dom 05:00]
 :END:
-This package contains the VirtualBox Guest Additions which support better
-integration of VirtualBox guests with the Host, including file sharing,
-clipboard sharing and Seamless mode
+This package contains the VirtualBox Guest Additions
 
-* DONE Install libvirt, qemu-kvm & utilities
+#+begin_quote
+which support better integration of VirtualBox guests with the Host, including
+file sharing, clipboard sharing and Seamless mode,
+#+end_quote
+
+Whatever that means.
+
+** DONE Install libvirt, qemu-kvm & utilities
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 09:59]
 :END:
@@ -60,18 +75,7 @@ clipboard sharing and Seamless mode
   sudo dnf -yq group install --with-optional virtualization
 #+end_src
 
-** TODO Fix =libvirtd.socket=
-:PROPERTIES:
-:CREATED:  [2020-12-04 vie 09:20]
-:END:
-I wasn't able to configure =libvirtd.socket= yet. It won't start the libvirt
-service when needed. I have to start or enable =libvirtd.service= explicitly
-instead:
-#+begin_src shell
-  sudo systemctl enable --now libvirtd.service
-#+end_src
-
-** DONE Switch to [[https://libvirt.org/daemons.html#switching-to-modular-daemons][modular dæmons]]
+*** DONE Switch to [[https://libvirt.org/daemons.html#switching-to-modular-daemons][modular dæmons]]
 CLOSED: [2020-12-13 dom 04:01]
 :PROPERTIES:
 :CREATED:  [2020-12-12 sáb 22:09]
@@ -93,7 +97,7 @@ modes
   not imply any elevation of privileges.
 #+end_quote
 
-*** DONE Stop the current monolithic daemon and its socket units
+**** DONE Stop the current monolithic daemon and its socket units
 CLOSED: [2020-12-12 sáb 23:22]
 :PROPERTIES:
 :CREATED:  [2020-12-12 sáb 23:17]
@@ -105,7 +109,8 @@ CLOSED: [2020-12-12 sáb 23:22]
 
 For stronger protection it is valid to use =mask= instead of =disable= too.
 
-*** TODO Enable the new daemons for the particular virtualizationd driver desired, and any of the secondary drivers to accompany it.
+**** DONE Enable the new daemons for the particular virtualizationd driver desired, and any of the secondary drivers to accompany it.
+CLOSED: [2020-12-18 vie 00:10]
 :PROPERTIES:
 :CREATED:  [2020-12-12 sáb 23:29]
 :END:
@@ -149,20 +154,53 @@ TCP or TLS sockets configured, those should be started too
   systemctl start virtproxyd-tls.socket
 #+end_src
 
-* DONE Install Vagrant and its libvirt plugin
+** TODO Install VMware
+:PROPERTIES:
+:CREATED:  [2020-12-18 vie 00:12]
+:END:
+Vagrant supports many providers. They are not listed in [[https://www.vagrantup.com/docs/providers/default][the documentation]] but in the [[https://app.vagrantup.com/boxes/search][box search page]]. The complete list is:
+
+- aws
+- cloudstack
+- digitalocean
+- docker
+- google
+- hyperv
+- libvirt
+- lxc
+- openstack
+- parallels
+- qemu
+- rackspace
+- softlayer
+- veertu
+- virtualbox
+- vmware
+- vmware_desktop
+- vmware_fusion
+- vmware_ovf
+- wmware_wotkstation
+- vsphere
+- xenserver
+  
+* DONE Install Vagrant
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 19:19]
 :END:
-Choose your poison: 
+Vagrants abstracts different virtual machine providers under a common API and
+configuration layer. VirtualBox, Hyper-V, and Docker are supported right out of
+the box, for the rest I have to install plugins.
+
+Here is an overview of the differnet installation methods that I tried out:
 - Fedora's package (recommended) :: Easiest installation. Lagging somewhat
   behind the upstream version. Won't work with [[https://app.vagrantup.com/peru/boxes/windows-server-2019-standard-x64-eval][Windows guests]]. Moreover,
-  [[https://github.com/asdf-vm/asdf-ruby][asdf-ruby]] installed runtimes will conflict with the Vagrant package. The
-  solution is to type ~asdf local ruby system~ inside the directory with the
-  Vagrantfile, otherwise Vagrant will complain about not being able to find some
-  ruby gems and not being able to require =nokogiri=. It has one inconvinience
-  though: if asdf uses the system's Ruby, Emacs won't be able to find the binary
-  for rubocop (this may affect solargraph too). I thought ~asdf local ruby
-  system 2.7.2~ would solve the issuse but it didn't.[fn:1]
+  [[https://github.com/asdf-vm/asdf-ruby][asdf-ruby]] installed runtimes will conflict with Vagrant. The solution is to
+  type ~asdf local ruby system~ inside the directory with the Vagrantfile,
+  otherwise Vagrant will complain about not being able to find some ruby gems
+  and not being able to require =nokogiri=. It has one inconvinience though in
+  that Emacs won't be able to find the binary for rubocop (this may affect
+  solargraph too). I thought ~asdf local ruby system 2.7.2~ would solve the
+  issuse but it didn't.[fn:1]
 - [[https://github.com/Banno/asdf-hashicorp][asdf-hashicorp]] :: Easy installation. In fish shell just ~asdf plugin add
   vagrant; then asdf install vagrant latest; then asdf global vagrant x.y.z~ .
   As of [2020-12-04 vie]— ~vagrant plugin install vagrant-libvirt~ will fail so
@@ -177,7 +215,7 @@ Choose your poison:
   vagrant-libvirt~ but make sure to remove the =~/.vagrant.d= remnant from
   previous attempts, beforehand. I found the workarounds and relevant
   information for Fedora, RHEL 8, and CentOS 8 in [[https://github.com/vagrant-libvirt/vagrant-libvirt#installation][vagrant-libvirt installation
-  instructions]] and in this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. Similar problems also affects other
+  instructions]] and in this [[https://github.com/hashicorp/vagrant/issues/11020#issuecomment-647120209][Vagrant issue]]. Similar problems also affect other
   software like Matlab and Scilab. I quote the following comment from [[https://bugzilla.redhat.com/show_bug.cgi?id=1829790#c10][another
   bug report]]:
   #+begin_quote
@@ -189,10 +227,38 @@ Choose your poison:
   Matlab is a proprietary product so… good luck, any number of things can break
   when they play fast and loose with critical libraries like openssl.
   #+end_quote
-- [[https://www.vagrantup.com/docs/installation/source][Install from source]] :: and try to use the Docker image for =vagrant-libvirt=.
+- [[https://www.vagrantup.com/docs/installation/source][Install from source]] :: clone the GitHub repo and ~bundle install~. Then try to
+  use the Docker image for =vagrant-libvirt=.
 - Use Windows :: I followed [[https://www.vagrantup.com/docs/other/wsl.html][Vagrant and Windows Subsystem for Linux]]. Looks
     promising but I remember having issues with WSL 2. The tests I made with the
     native version and VirtualBox run fine.
+
+   
+** Vagarnt providers 
+:PROPERTIES:
+:CREATED:  [2020-12-18 vie 01:00]
+:END:
+The complete list of providers is available in the [[https://app.vagrantup.com/boxes/search][Vagrant's box registry web page]]:
+- aws :: 
+
+
+** Plugins
+:PROPERTIES:
+:CREATED:  [2020-12-18 vie 00:51]
+:END:
+
+
+| plugin      | Fedora | asdf-hashicorp | official package | source |
+|-------------+--------+----------------+------------------+--------|
+| aws         |        | 😄             |                  |        |
+| cachier     |        | 😄             |                  |        |
+| hostmanager |        | 😄             |                  |        |
+| libvirt     |        | 💔             |                  |        |
+| reload      |        | 😄             |                  |        |
+| vbguest     |        | 😄             |                  |        |
+
+https://github.com/mitchellh/vagrant-aws
+
 
 * TODO Install VMware
 :PROPERTIES:
