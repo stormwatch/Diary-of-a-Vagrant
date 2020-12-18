@@ -158,31 +158,7 @@ TCP or TLS sockets configured, those should be started too
 :PROPERTIES:
 :CREATED:  [2020-12-18 vie 00:12]
 :END:
-Vagrant supports many providers. They are not listed in [[https://www.vagrantup.com/docs/providers/default][the documentation]] but in the [[https://app.vagrantup.com/boxes/search][box search page]]. The complete list is:
-
-- aws
-- cloudstack
-- digitalocean
-- docker
-- google
-- hyperv
-- libvirt
-- lxc
-- openstack
-- parallels
-- qemu
-- rackspace
-- softlayer
-- veertu
-- virtualbox
-- vmware
-- vmware_desktop
-- vmware_fusion
-- vmware_ovf
-- wmware_wotkstation
-- vsphere
-- xenserver
-  
+ 
 * DONE Install Vagrant
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 19:19]
@@ -230,35 +206,79 @@ Here is an overview of the differnet installation methods that I tried out:
 - [[https://www.vagrantup.com/docs/installation/source][Install from source]] :: clone the GitHub repo and ~bundle install~. Then try to
   use the Docker image for =vagrant-libvirt=.
 - Use Windows :: I followed [[https://www.vagrantup.com/docs/other/wsl.html][Vagrant and Windows Subsystem for Linux]]. Looks
-    promising but I remember having issues with WSL 2. The tests I made with the
-    native version and VirtualBox run fine.
-
+  promising but I remember having issues with. The preliminary tests I made with
+  the native version and VirtualBox run fine.
    
-** Vagarnt providers 
+** Vagrant providers 
 :PROPERTIES:
 :CREATED:  [2020-12-18 vie 01:00]
 :END:
-The complete list of providers is available in the [[https://app.vagrantup.com/boxes/search][Vagrant's box registry web page]]:
-- aws :: 
+A list of providers is available in the [[https://app.vagrantup.com/boxes/search][Vagrant's box search page]]:
+- aws
+- cloudstack
+- digitalocean
+- docker
+- google
+- hyperv
+- libvirt
+- lxc
+- openstack
+- parallels
+- qemu
+- rackspace
+- softlayer
+- veertu
+- virtualbox
+- vmware
+- vmware_desktop
+- vmware_fusion
+- vmware_ovf
+- wmware_workstation
+- vspehere
+- xenserver
 
+Vagrant ships out of the box with support for VirtualBox, Hyper-V, and
+Docker.For the time being I'll focus on VirtualBox, libvirt and maybe some of
+the cloud providers. VMware support on Vagrant [[https://www.vagrantup.com/vmware][isn't free]], and is advertised as
+being more performant and stable.
+
+#+begin_quote
+Vagrant is free and open source. While the VMware providers are not, the revenue
+is used to continue to develop, support, and grow Vagrant and the community
+around it.
+#+end_quote
 
 ** Plugins
 :PROPERTIES:
 :CREATED:  [2020-12-18 vie 00:51]
 :END:
+The [[https://github.com/hashicorp/vagrant/tree/main/plugins][core plugins]] implement the basic commands, providers, provisioners, hosts
+and guest functionalities.
 
+#+begin_quote
+Plugins are powerful, first-class citizens that extend Vagrant using a
+well-documented, stable API that can withstand major version upgrades.
 
-| plugin      | Fedora | asdf-hashicorp | official package | source |
-|-------------+--------+----------------+------------------+--------|
-| aws         |        | 😄             |                  |        |
-| cachier     |        | 😄             |                  |        |
-| hostmanager |        | 😄             |                  |        |
-| libvirt     |        | 💔             |                  |        |
-| reload      |        | 😄             |                  |        |
-| vbguest     |        | 😄             |                  |        |
+In fact, most of the core of Vagrant is [[https://github.com/hashicorp/vagrant/tree/main/plugins][implemented using plugins]]. Since Vagrant
+[[https://en.wikipedia.org/wiki/Eating_your_own_dog_food][dogfoods]] its own plugin API, you can be confident that the interface is stable
+and well supported.
+#+end_quote
 
-https://github.com/mitchellh/vagrant-aws
+Third party plugins implement additional providers, provisioners, and features
+like caching, networking, file sharing, etc. Here are some good starting points
+to look for Vagrant plugins:
 
+- Your distribution :: if your distribution packages a vagrant plugin, it is a
+  good indication that is widely used.
+- [[https://github.com/hashicorp/vagrant/wiki/Available-Vagrant-Plugins][Avaliable Vagrant Plugins]] :: in Vagrant's wiki page at GitHub.
+- [[https://github.com/iJackUA/awesome-vagrant#notable-plugins][Notable plugins]] :: is a section in the Awesome Vagrant page at GitHub.
+  
+There are currently src_shell{gem search --quiet --no-verbose --no-versions
+--no-details "(vagrant-|-vagrant)" | wc -l} packages containing =vagrant=. To
+retrieve a list with a short description of each one run:
+#+begin_src shell :async :exports code :results none
+gem search --quiet --no-verbose --no-versions --details "vagrant-|-vagrant"
+#+end_src
 
 * TODO Install VMware
 :PROPERTIES:
