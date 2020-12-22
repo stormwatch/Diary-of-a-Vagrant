@@ -12,10 +12,10 @@
 #+exclude_tags: noexport
 #+creator: Emacs 27.1 (Org mode 9.4)
 
-I'll try to install Vagrant and most providers like VirtualBox, libvirt, VMware,
-etc. Then I'll download some boxes and test which ones succed or fail when
-brought up. My current computer runs Fedora 32, so many of the steps I'll detail
-will apply to similar distributions without changes.
+I'll try to install Vagrant and most provider backendslike VirtualBox, libvirt,
+VMware, etc. Then I'll download some boxes to test, maybe also bechnmark and
+learn about them. My current computer runs Fedora 33, so many of the steps I'll
+detail will apply to similar distributions without changes.
 
 * Hardware requirements
 :PROPERTIES:
@@ -213,7 +213,7 @@ Here is an overview of the differnet installation methods that I tried out:
 :PROPERTIES:
 :CREATED:  [2020-12-18 vie 01:00]
 :END:
-A list of providers is available in the [[https://app.vagrantup.com/boxes/search][Vagrant's box search page]]:
+A list of Vagrant providers is available in the [[https://app.vagrantup.com/boxes/search][Vagrant's box search page]]:
 - aws
 - cloudstack
 - digitalocean
@@ -341,11 +341,13 @@ Official images mirrored in [[https://alt.fedoraproject.org/cloud/][Fedora cloud
 :CREATED:  [2020-12-06 dom 04:02]
 :END:
 Official images for [[https://www.centos.org/][CentOS]].Besides the main images, they offer a proof of
-concept [[https://app.vagrantup.com/centos/boxes/atomic-host-aws][atomic host box]] that uses AWS backend.
+concept [[https://app.vagrantup.com/centos/boxes/atomic-host-aws][atomic host box]] that uses the aws backend.
 ** [[https://app.vagrantup.com/freebsd/][FreeBSD]]                                       :VirtualBox:VMware_desktop:
 :PROPERTIES:
 :CREATED:  [2020-12-06 dom 04:03]
 :END:
+They claim to be “The FreeBSD Release Engineering Team” and I have no reason to doubt their sincerity.
+
 ** [[https://www.alpinelinux.org/][alpine Linux]]                                         :VirtualBox:libvirt:
 :PROPERTIES:
 :CREATED:  [2020-12-06 dom 14:37]
@@ -367,7 +369,7 @@ Mirrored by [[https://app.vagrantup.com/generic/][generic]]. Provides:
 - openSUSE
 - Gentoo
 - HardenedBSD
-- RHEL
+- RHEL 👀
 - DragonFlyBSD
   
 * TODO Testing Vagrant providers and boxes
