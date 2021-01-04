@@ -27,9 +27,8 @@ detail will apply to similar distributions without changes.
 :CREATED:  [2020-12-04 vie 10:02]
 :END:
 If you have =libvirt-client= or =lscpu= already installed, you can run
-~virt-host-validate~[fn:: As of [2021-01-04] the results will mistakenly give a
-warnin on cgroup values if using cgroups v2. This is already [[https://gitlab.com/libvirt/libvirt/-/issues/94][fixed]]] or ~LANG=
-lscpu | grep Virtualization~ respectively. Otherwise run
+~virt-host-validate~[fn:2] or ~LANG= lscpu | grep Virtualization~
+respectively. Otherwise run
 #+begin_src sh :async
 egrep "svm|vmx" /proc/cpuinfo
 #+end_src
@@ -461,8 +460,12 @@ Maybe this is needed for some boxes/providers.
   libvirt, Gluster, PatternFly, and Ansible.
 
 * Footnotes
+:PROPERTIES:
+:CREATED:  [2021-01-04 lun 12:39]
+:END:
+[fn:1] As of [2021-01-04]  
 
-[fn:1] For the time being I added the following to my init file:
+[fn:2] For the time being I added the following to my init file:
 #+begin_src emacs-lisp
    (use-package rubocop
     :defer t
