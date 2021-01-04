@@ -27,8 +27,8 @@ detail will apply to similar distributions without changes.
 :CREATED:  [2020-12-04 vie 10:02]
 :END:
 If you have =libvirt-client= or =lscpu= already installed, you can run
-~virt-host-validate~[fn:1] or ~LANG= lscpu | grep Virtualization~
-respectively. Otherwise run
+~virt-host-validate~ [fn:1] or ~LANG= lscpu | grep Virtualization~ respectively.
+Otherwise run
 #+begin_src sh :async
 egrep "svm|vmx" /proc/cpuinfo
 #+end_src
