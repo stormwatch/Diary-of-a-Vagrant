@@ -22,7 +22,7 @@ detail will apply to similar distributions without changes.
 :CREATED:  [2020-12-04 vie 09:25]
 :END:
 ** DONE Enable virtualization features in the BIOS setup
-** DONE COMMENT Check if your system supports virtualization
+** DONE Check if your system supports virtualization
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 10:02]
 :END:
