@@ -463,7 +463,8 @@ Maybe this is needed for some boxes/providers.
 :PROPERTIES:
 :CREATED:  [2021-01-04 lun 12:39]
 :END:
-[fn:1] As of [2021-01-04]  
+[fn:1] As of [2021-01-04] ~virt-host-validate~ will yeld some warnings when
+using cgroups v2. This is already [[https://gitlab.com/libvirt/libvirt/-/commit/126cb34a206a44f04e364700b46426dff9f387d5][fixed]].
 
 [fn:2] For the time being I added the following to my init file:
 #+begin_src emacs-lisp
