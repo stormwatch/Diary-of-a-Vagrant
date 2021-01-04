@@ -27,7 +27,7 @@ detail will apply to similar distributions without changes.
 :CREATED:  [2020-12-04 vie 10:02]
 :END:
 If you have =libvirt-client= or =lscpu= already installed, you can run
-~virt-host-validate~[fn:2] or ~LANG= lscpu | grep Virtualization~
+~virt-host-validate~[fn:1] or ~LANG= lscpu | grep Virtualization~
 respectively. Otherwise run
 #+begin_src sh :async
 egrep "svm|vmx" /proc/cpuinfo
@@ -191,7 +191,7 @@ Here is an overview of the differnet installation methods that I tried out:
   and not being able to require =nokogiri=. It has one inconvinience though in
   that Emacs won't be able to find the binary for rubocop (this may affect
   solargraph too). I thought ~asdf local ruby system 2.7.2~ would solve the
-  issuse but it didn't.[fn:1] In order to install =vagrant-libvirt= with
+  issuse but it didn't.[fn:2] In order to install =vagrant-libvirt= with
   ~vagrant plugin install vagrant-libvirt~ you have to run ~dnf install
   ruby-devel~ and ~asdf global ruby system~ before; otherwise you can install
   the =vagrant-libvirt= packaged by Fedora.
