@@ -22,13 +22,15 @@ detail will apply to similar distributions without changes.
 :CREATED:  [2020-12-04 vie 09:25]
 :END:
 ** DONE Enable virtualization features in the BIOS setup
-** DONE Check if your system supports virtualization
+** DONE COMMENT Check if your system supports virtualization
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 10:02]
 :END:
 If you have =libvirt-client= or =lscpu= already installed, you can run
-~virt-host-validate~ or ~LANG= lscpu | grep Virtualization~ respectively. Otherwise run
-#+begin_src
+~virt-host-validate~[fn:: As of [2021-01-04] the results will mistakenly give a
+warnin on cgroup values if using cgroups v2. This is already [[https://gitlab.com/libvirt/libvirt/-/issues/94][fixed]]] or ~LANG=
+lscpu | grep Virtualization~ respectively. Otherwise run
+#+begin_src sh :async
 egrep "svm|vmx" /proc/cpuinfo
 #+end_src
 
@@ -71,7 +73,7 @@ Whatever that means.
 :PROPERTIES:
 :CREATED:  [2020-12-04 vie 09:59]
 :END:
-#+begin_src shell :async :results none
+#+begin_src shell :async :results silent
   sudo dnf -yq group install --with-optional virtualization
 #+end_src
 
@@ -86,12 +88,12 @@ libvirtd is migrating from  [[https://libvirt.org/daemons.html#monolithic-vs-mod
 The libvirt daemons, whether monolithic or modular, can often operate in two
 modes
 
-- System mode :: the daemon is running as the root user account, enabling access
+- System mode :: the dæmon is running as the root user account, enabling access
   to its full range of functionality. A read-write connection to daemons in
   system mode typically implies privileges equivalent to having a root shell.
   Suitable authentication mechanisms must be enabled to secure it against
   untrustworthy clients/users.
-- Session mode :: the daemon is running as any non-root user account, providing
+- Session mode :: the dæmon is running as any non-root user account, providing
   access to a more restricted range of functionality. Only client apps/users
   running under the same UID are permitted to connect, thus a connection does
   not imply any elevation of privileges.
@@ -107,6 +109,8 @@ CLOSED: [2020-12-12 sáb 23:22]
   systemctl disable --now libvirtd{,-ro,-admin,-tcp,-tls}.socket
 #+end_src
 
+#+RESULTS:
+
 For stronger protection it is valid to use =mask= instead of =disable= too.
 
 **** DONE Enable the new daemons for the particular virtualizationd driver desired, and any of the secondary drivers to accompany it.
@@ -115,7 +119,7 @@ CLOSED: [2020-12-18 vie 00:10]
 :CREATED:  [2020-12-12 sáb 23:29]
 :END:
 The following example enables the =qemu= and =virtbvox= drivers and all the secondary drivers:
-#+begin_src sh :async :results none
+#+begin_src bash :async :results silent
   for drv in qemu virtvbox interface network nodedev nwfilter secret storage
   do
       systemctl unmask virt${drv}d.service
@@ -129,7 +133,7 @@ Start the sockets for the same set of daemons. There is no need to start the
 services as they will get started when the first socket connection is
 established.
 # why does the document ommit =virtinterface.socket=?
-#+begin_src sh :async :results none
+#+begin_src bash :async :results silent
   for drv in qemu virtbvox network nodedev nwfilter secret storage
   do
       systemctl start virt${drv}d{,-ro,-admin}.socket
@@ -138,7 +142,7 @@ established.
 
 If connections from remote hosts need to be supported the proxy daemon must be
 enabled and started
-#+begin_src sh :async :results none
+#+begin_src bash :async :results silent
   systemctl unmask virtproxyd.service
   systemctl unmask virtproxyd{,-ro,-admin}.socket
   systemctl enable virtproxyd.service
@@ -148,10 +152,22 @@ enabled and started
 
 The UNIX sockets allow for remote access using SSH tunneling. If libvirtd had
 TCP or TLS sockets configured, those should be started too
-#+begin_src sh :async :results none
+#+begin_src bash :async :results silent
   systemctl unmask virtproxyd-tls.socket
   systemctl enable virtproxyd-tls.socket
   systemctl start virtproxyd-tls.socket
+#+end_src
+
+*** TODO Configure the logging dæmon
+:PROPERTIES:
+:CREATED:  [2020-12-30 mié 12:35]
+:END:
+#+begin_src bash :async :results silent
+  for drv in log
+  do
+      systemctl enable virt${drv}d.service
+      systemctl enable --now virt${drv}d{,-admin}.socket
+  done
 #+end_src
 
 ** TODO Install VMware
@@ -176,7 +192,10 @@ Here is an overview of the differnet installation methods that I tried out:
   and not being able to require =nokogiri=. It has one inconvinience though in
   that Emacs won't be able to find the binary for rubocop (this may affect
   solargraph too). I thought ~asdf local ruby system 2.7.2~ would solve the
-  issuse but it didn't.[fn:1]
+  issuse but it didn't.[fn:1] In order to install =vagrant-libvirt= with
+  ~vagrant plugin install vagrant-libvirt~ you have to run ~dnf install
+  ruby-devel~ and ~asdf global ruby system~ before; otherwise you can install
+  the =vagrant-libvirt= packaged by Fedora.
 - [[https://github.com/Banno/asdf-hashicorp][asdf-hashicorp]] :: Easy installation. In fish shell just ~asdf plugin add
   vagrant; then asdf install vagrant latest; then asdf global vagrant x.y.z~ .
   As of [2020-12-04 vie]— ~vagrant plugin install vagrant-libvirt~ will fail so
@@ -227,7 +246,7 @@ A list of Vagrant providers is available in the [[https://app.vagrantup.com/boxe
 - qemu
 - rackspace
 - softlayer
-- veertu
+- veertu :: Container-like virtualization for MacOS
 - virtualbox
 - vmware
 - vmware_desktop
@@ -276,12 +295,36 @@ to look for Vagrant plugins:
 There are currently src_shell{gem search --quiet --no-verbose --no-versions
 --no-details "(vagrant-|-vagrant)" | wc -l} packages containing =vagrant=. To
 retrieve a list with a short description of each one run:
-#+begin_src shell :async :exports code :results none
+#+begin_src sh :async :exports code :results silent
 gem search --quiet --no-verbose --no-versions --details "vagrant-|-vagrant"
 #+end_src
 
-* TODO Install VMware
+*** Currently installed plugins
 :PROPERTIES:
+:CREATED:  [2020-12-30 mié 13:51]
+:END:
+To get a list of currently installed plugins run:
+#+begin_src sh :async :exports both :results raw list
+vagrant plugin list
+#+end_src
+
+#+RESULTS:
+- vagrant-cachier (1.2.1, global)
+- vagrant-libvirt (0.3.0, global)
+
+**** [[http://fgrehm.viewdocs.io/vagrant-cachier/][vagrant-cachier]]
+:PROPERTIES:
+:CREATED:  [2020-12-30 mié 14:02]
+:END:
+Is best described by the author:
+#+begin_quote
+A Vagrant plugin that helps you reduce the amount of coffee you drink while
+waiting for boxes to be provisioned by sharing a common package cache among
+similiar VM instances.
+#+end_quote
+
+* TODO Install VMware
+:PROPERTIEh:
 :CREATED:  [2020-12-04 vie 19:42]
 :END:
 
@@ -371,7 +414,7 @@ Mirrored by [[https://app.vagrantup.com/generic/][generic]]. Provides:
 - HardenedBSD
 - RHEL 👀
 - DragonFlyBSD
-  
+
 * TODO Testing Vagrant providers and boxes
 :PROPERTIES:
 :CREATED:  [2020-12-02 mié 18:56]
@@ -386,6 +429,15 @@ Current status after running ~vagrant up~
 | [[https://app.vagrantup.com/alpine-linux/boxes/alpine-x86_64][alpine-linux/alpine-x86_64]]  | pending    | pending            | N/A     |
 | [[https://app.vagrantup.com/fedora/boxes/33-cloud-base][fedora/33-cloud-base]]        | pending    | success            | N/A     |
 
+* TODO Selinux
+:PROPERTIES:
+:CREATED:  [2020-12-30 mié 14:54]
+:END:
+Maybe this is needed for some boxes/providers.
+#+begin_src sh :async :results silent
+  setsebool -P nis_enabled 1
+#+end_src
+
 * Further reading
 :PROPERTIES:
 :CREATED:  [2020-12-05 sáb 22:17]
@@ -395,6 +447,8 @@ Current status after running ~vagrant up~
 - The [[https://fedoraproject.org/wiki/Vagrant][Vagrant page]] :: in the Fedora Wiki provides a useful Vagrantfile example
   to use the official [[https://alt.fedoraproject.org/cloud/][Fedora cloud base images for Vagrant]].
 - [[https://fedoraproject.org/wiki/How_to_debug_Virtualization_problems][How to debug Virtualization problems]] :: in the Fedora Wiki.
+- [[https://developer.fedoraproject.org/tools/vagrant/][The Vagrant page at fedora DEVELOPER]] :: Includes many configuration tips,
+  especially for setting NFS shares up.
 - [[https://fedoramagazine.org/vagrant-qemukvm-fedora-devops-sysadmin/][Installing and running Vagrant using qemu-kvm]] :: Fedora Magazine, [2020-09-21].
 - [[https://fedoramagazine.org/vagrant-beyond-basics/][Vagrant beyond the basics]] :: Fedora Magazine, [2020-12-02].
 - [[https://fedoramagazine.org/full-virtualization-system-on-fedora-workstation-30/][How to run virtual machines with virt-manager]] :: Fedora Magazine,  [2019-07-22] .
